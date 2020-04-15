@@ -12,6 +12,10 @@ HEIGHT = 700
 X_GRID = (WIDTH - GRID_WIDTH) // 3  # grid is in the middle
 Y_GRID = HEIGHT - GRID_HEIGHT  # grid is along the bottom
 
+BG_COLOUR = (92,105,117)
+GRID_COLOUR = (142,155,166)
+GRIDLINE_COLOUR = (192,192,192,0.8)
+
 # shapes
 class Shape(object):
     def __init__(self, x, y):
@@ -32,7 +36,7 @@ class OShape(Shape):
         self.state1 = [[1,1],
                        [1,1]]
         self.states = [self.state1]
-        self.colour = (255, 255, 0)
+        self.colour = (255, 225, 0)
 
 class IShape(Shape):
     def __init__(self):
@@ -43,7 +47,7 @@ class IShape(Shape):
                        [1]]
         self.state2 = [[1,1,1,1]]
         self.states = [self.state1, self.state2]
-        self.colour = (0, 255, 255)
+        self.colour = (0, 150, 219)
 
 class TShape(Shape):
     def __init__(self):
@@ -59,7 +63,7 @@ class TShape(Shape):
                        [1,1],
                        [0,1]]
         self.states = [self.state1, self.state2, self.state3, self.state4]
-        self.colour = (128, 0, 128)
+        self.colour = (205, 102, 204)
 
 class SShape(Shape):
     def __init__(self):
@@ -70,7 +74,7 @@ class SShape(Shape):
                        [1,1],
                        [0,1]]
         self.states = [self.state1, self.state2]
-        self.colour = (0, 255, 0)
+        self.colour = (0,175,157)
 
 class ZShape(Shape): # backward S
     def __init__(self):
@@ -81,7 +85,7 @@ class ZShape(Shape): # backward S
                        [1,1],
                        [1,0]]
         self.states = [self.state1, self.state2]
-        self.colour = (255, 0, 0)
+        self.colour = (235, 60, 60)
 
 class LShape(Shape):
     def __init__(self):
@@ -97,7 +101,7 @@ class LShape(Shape):
         self.state4 = [[1,1,1],
                        [1,0,0]]                       
         self.states = [self.state1, self.state2, self.state3, self.state4]
-        self.colour = (0, 0, 255)
+        self.colour = (58, 125, 218)
 
 class JShape(Shape): # backward L
     def __init__(self):
@@ -113,7 +117,7 @@ class JShape(Shape): # backward L
         self.state4 = [[1,0,0],
                        [1,1,1]]
         self.states = [self.state1, self.state2, self.state3, self.state4]
-        self.colour = (255, 165, 0)
+        self.colour = (255, 182, 82)
 
 shapes = [OShape(), IShape(), TShape(), SShape(), ZShape(), LShape(), JShape()]
 
@@ -124,7 +128,7 @@ def create_grid(filled_colours):
     m = GRID_WIDTH // BLOCK_SIZE
     n = GRID_HEIGHT // BLOCK_SIZE
     # initialize n x m grid with black blocks
-    grid = [[(0,0,0) for _ in range(m)] for _ in range(n)]
+    grid = [[GRID_COLOUR for _ in range(m)] for _ in range(n)]
     for i in range(n): # "y-value"
         for j in range(m): # "x-value"
             if (j,i) in filled_colours: # (x,y)
@@ -137,16 +141,16 @@ def draw_grid(screen, grid):
             # draw.rect: (left, top, width, height), thickness
             pygame.draw.rect(screen, grid[i][j], (X_GRID + j*BLOCK_SIZE, Y_GRID + i*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE), 0)
     # border
-    pygame.draw.rect(screen, (255, 0, 0), (X_GRID, Y_GRID, GRID_WIDTH, GRID_HEIGHT), 5)
+    # pygame.draw.rect(screen, (255,255,255,0.5), (X_GRID, Y_GRID, GRID_WIDTH, GRID_HEIGHT), 5)
 
 def draw_grid_lines(screen, grid):
     for i in range(len(grid)):
         # draw horizontal lines from starting x point
-        pygame.draw.line(screen, (128,128,128), (X_GRID, Y_GRID + i*BLOCK_SIZE), \
+        pygame.draw.line(screen, GRIDLINE_COLOUR, (X_GRID, Y_GRID + i*BLOCK_SIZE), \
             (X_GRID + GRID_WIDTH, Y_GRID + i*BLOCK_SIZE))
         for j in range(len(grid[i])+1):
             # draw vertical lines from starting y point
-            pygame.draw.line(screen, (128, 128, 128), (X_GRID + j*BLOCK_SIZE, Y_GRID), \
+            pygame.draw.line(screen, GRIDLINE_COLOUR, (X_GRID + j*BLOCK_SIZE, Y_GRID), \
                 (X_GRID + j*BLOCK_SIZE, Y_GRID + GRID_HEIGHT))
 
 def draw_text(screen, text, size, color, x, y):
@@ -156,9 +160,9 @@ def draw_text(screen, text, size, color, x, y):
     screen.blit(text, (x - text.get_width()/2, y - text.get_height()/2))
 
 def draw_screen(screen, grid, curr_score=0, prev_score=0):
-    screen.fill((0, 0, 0))
+    screen.fill(BG_COLOUR)
 
-    draw_text(screen, 'Tetris', 60, (255, 255, 255), X_GRID+GRID_WIDTH/2, 30)
+    draw_text(screen, 'Tetris', 60, (255, 255, 255), X_GRID+GRID_WIDTH/2, 50)
     draw_grid(screen, grid)
     draw_grid_lines(screen, grid)
 
@@ -183,7 +187,7 @@ def is_valid_move(shape, grid):
     valid_positions = []
     for i in range(len(grid)):
         for j in range(len(grid[i])):
-            if grid[i][j] == (0,0,0):
+            if grid[i][j] == GRID_COLOUR:
                 valid_positions.append((j, i))
 
     positions = get_position(shape)
@@ -198,7 +202,7 @@ def clear_rows(grid, filled_colours):
     counter = 0
     shift_down = [0] * len(grid)
     for i in range(len(grid)-1, -1, -1): # start from bottom row
-        if (0,0,0) not in grid[i]: # row is all filled
+        if GRID_COLOUR not in grid[i]: # row is all filled
             counter += 1
             for k in range(i):
                 shift_down[k] += 1  # number of times to shift row index k
@@ -221,6 +225,7 @@ def draw_next_shape(screen, shape):
         for j in range(len(state[0])):
             if state[i][j]:
                 pygame.draw.rect(screen, shape.colour, (start_x + j*BLOCK_SIZE, start_y + i*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE), 0)
+                pygame.draw.rect(screen, GRIDLINE_COLOUR, (start_x + j*BLOCK_SIZE, start_y + i*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE), 1)
 
 def check_if_game_end(positions):
     for (_,y) in positions:
@@ -238,6 +243,8 @@ def write_score(new_score):
     with open('high_score.txt', 'w') as f:
         if int(score) > new_score:
             f.write(str(score))
+        else:
+            f.write(str(new_score))
 
 def main_helper(screen):
     filled_colours = {} # {(x,y):(R,G,B)}
@@ -286,10 +293,16 @@ def main_helper(screen):
                     current_piece.y += 1
                     if not(is_valid_move(current_piece, grid)):
                         current_piece.y -= 1
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_UP:
                     current_piece.rotation += 1
                     if not(is_valid_move(current_piece, grid)):
                         current_piece.rotation -= 1
+                if event.key == pygame.K_SPACE:
+                    while True:
+                        current_piece.y += 1
+                        if not(is_valid_move(current_piece, grid)):
+                            current_piece.y -= 1
+                            break
 
         positions = get_position(current_piece)
 
@@ -311,7 +324,7 @@ def main_helper(screen):
         pygame.display.flip()
 
         if check_if_game_end(filled_colours):
-            screen.fill((0,0,0))
+            screen.fill(BG_COLOUR)
             draw_text(screen, "You have lost", 40, (255,255,255), WIDTH/2, HEIGHT/2)
             draw_text(screen, "Score: " + str(curr_score), 40, (255,255,255), WIDTH/2, HEIGHT/2+50)
             pygame.display.flip()
@@ -322,7 +335,7 @@ def main_helper(screen):
 def main(screen):
     run = True
     while run:
-        screen.fill((0,0,0))
+        screen.fill(BG_COLOUR)
         draw_text(screen, 'Press any key to start', 40, (255,255,255), \
             WIDTH/2, HEIGHT/2)
         pygame.display.flip()
@@ -338,4 +351,3 @@ pygame.font.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Tetris')
 main(screen)
-
